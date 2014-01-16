@@ -1,0 +1,275 @@
+html, body{
+	margin:0px;
+    height:100%;
+}
+
+#upload{
+    left-margin:70%;
+}
+
+.swipe-button{
+	background-color:#3d94f6;
+	text-indent:0;
+	cursor:pointer;
+	display:inline-block;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	font-style:normal;
+	height:65px;
+	line-height:65px;
+	width:100%;
+	text-decoration:none;
+	text-align:left;
+	border:1px solid #337fed;
+	margin:0px;
+	padding: 0px 0px 0px 2em;
+	left:0px;
+}.swipe-button:hover {
+	background-color:#2366d1;
+}.swipe-button:active {
+	position:relative;
+}
+
+.header{
+    height: 45px; 
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    position: relative;
+    top: 0px;
+    position:fixed;
+}
+
+.track-list{
+	list-style-type: none;
+	margin:0px;
+	padding:0px;
+	border:0px;
+    margin-bottom:60px;
+    overflow-y:scroll;
+    position: relative;
+    height: calc(100% - 105px);
+    top:45px;
+}
+
+.audio-container {
+    height: 60px; 
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    position: relative;
+    bottom: 0px;
+    position:fixed;
+}
+
+.play-button, .pause-button {
+	display: block;
+	margin-left:42%;
+    height: 50px; 
+    width: 60px;
+    left: 48%;
+}
+
+.forward-button {
+    height: 40px; 
+    width: 40px;
+    margin-top:-40px;
+}
+
+.backward-button:after {
+    height: 40px; 
+    width: 40px;
+}
+
+.play-button:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 25.5px;
+    left: 48%;
+    margin: 0 auto;
+    border-style: solid;
+    border-width: 10px 0 10px 17px;
+    border-color: transparent transparent transparent rgba(255, 255, 255, 1);
+} .play-button:after:hover {
+	border-color: transparent transparent transparent rgba(127, 127, 127, 1);
+}
+
+/**
+ * Play and Pause buttons
+ */
+ 
+.pause-button:before {
+    width: 5px;        
+    height: 20px;
+    background: white;
+    position: absolute;
+    content: "";
+    top: 25.5px;
+    margin-left:48%;
+    left:0em;
+}
+ 
+.pause-button:after {
+    width: 5px;        
+    height: 20px;
+    background: white;
+    position: absolute;
+    content: "";
+    top: 25.5px;
+    margin-left:48%;
+    left:8px;
+}
+ 
+ 
+.forward-button:before {
+    width: 0;        	
+    height: 0;
+    top: 25.5px;
+    border-left: 17px solid white;
+    border-right: 10px solid transparent;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent; 
+    position: absolute;
+    content: "";
+    margin-left:70%;
+}
+ 
+.forward-button:after {
+    width: 5px;        
+    height: 20px;
+    background: white;
+    position: absolute;
+    content: "";
+    top: 25.5px;
+    margin-left:70%;
+    left:13px;
+}
+ 
+.backward-button:after {
+    width: 0;        	
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 17px solid white;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent; 
+    position: absolute;
+    content: "";
+    margin-left:20%;
+    top:25.5px;
+}
+ 
+.backward-button:before {
+    width: 5px;        
+    height: 20px;
+    background: white;
+    position: absolute;
+    content: "";
+    top: 25.5px;
+    margin-left:20%;
+    left:7px;
+}
+
+#songSlider{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    height:4px;
+    color:blue;
+    background-color: blue;
+    width:80%;
+    margin-left:10%;
+    margin-top:10px;
+} #songSlider::-webkit-progress-bar {
+    color:blue;
+    border-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+} #songSlider::-webkit-progress-value {
+    background-image:
+       -webkit-linear-gradient(-45deg, 
+                               transparent 33%, rgba(0, 0, 0, .1) 33%, 
+                               rgba(0,0, 0, .1) 66%, transparent 66%),
+       -webkit-linear-gradient(top, 
+                               rgba(255, 255, 255, .25), 
+                               rgba(0, 0, 0, .25)),
+       -webkit-linear-gradient(left, #09c, #09c);
+
+    border-radius: 2px; 
+    background-size: 35px 20px, 100% 100%, 100% 100%;
+} #songSlider::-webkit-progress-value::after {
+} #songSlider::-moz-progress-bar { 
+  background-image:
+    -moz-linear-gradient(
+      135deg, 
+      transparent 33%, 
+      rgba(0, 0, 0, 0.1) 33%, 
+      rgba(0, 0, 0, 0.1) 66%, 
+      transparent 66% 
+    ),
+    -moz-linear-gradient(
+      top, 
+      rgba(255, 255, 255, 0.25), 
+      rgba(0, 0, 0, 0.25)
+    ),
+    -moz-linear-gradient(
+      left, 
+      #09c, 
+      #09c
+    );
+
+  border-radius: 2px; 
+  background-size: 35px 20px, 100% 100%, 100% 100%; 
+}
+
+/*Track progress bar*/
+#trackProgress{
+
+}
+
+#overlay {
+    display: none; /* ensures it’s invisible until it’s called */
+    position: absolute; /* makes the div go into a position that’s absolute to the browser viewing area */
+    left: 10%; /* positions the div half way horizontally */
+    top: 10%; /* positions the div half way vertically */
+    padding: 25px; 
+    border: 2px solid black;
+    background-color: #ffffff;
+    width: 60%;
+    height: 60%;
+    z-index: 100; /* makes the div the top layer, so it’ll lay on top of the other content */
+}
+#fade {
+    display: none;  /* ensures it’s invisible until it’s called */
+    position: absolute;  /* makes the div go into a position that’s absolute to the browser viewing area */
+    left: 0%; /* makes the div span all the way across the viewing area */
+    top: 0%; /* makes the div span all the way across the viewing area */
+    background-color: black;
+    -moz-opacity: 0.7; /* makes the div transparent, so you have a cool overlay effect */
+    opacity: .70;
+    filter: alpha(opacity=70);
+    width: 100%;
+    height: 100%;
+    z-index: 90; /* makes the div the second most top layer, so it’ll lay on top of everything else EXCEPT for divs with a higher z-index (meaning the #overlay ruleset) */
+}
+
+#close-icon{
+    opacity:0.4;
+    width:24px;
+    height:24px;
+    position:absolute;
+    top:0px;
+    right:0px;
+    background: #999;
+    text-align: center;
+    cursor: pointer;
+}#close-icon:before{
+    content:'x';
+    color:#fff;
+    font-weight:400;
+    font-family: Arial, sans-serif;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}

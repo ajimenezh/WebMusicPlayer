@@ -1,0 +1,320 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="http://cdn.binaryjs.com/0/binary.js"></script>
+  <script src="http://code.jquery.com/jquery.js"></script>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="/public/css/all.css" rel="stylesheet">
+
+  <script>
+
+      // Connect to Binary.js server
+      var socket = io.connect();
+      var client = new BinaryClient('ws://localhost:9000/binary-endpoint');
+      var song;
+      var curSong;
+
+      // Received new stream from server!
+      client.on('stream', function(stream, meta){    
+        // Buffer for parts
+        var parts = [];
+        // Got new data
+        stream.on('data', function(data){
+          parts.push(data);
+        });
+        stream.on('end', function(){
+          // Display new data in browser!
+          src = (window.URL || window.webkitURL).createObjectURL(new Blob(parts));
+          //$('#container').append('<img src="' + src + '" alt="some_text">');
+          if (typeof song != "undefined") {
+            song.pause();
+          }
+
+          song = new Audio(src);
+          document.getElementById("pause-play-button").setAttribute("class", "pause-button");
+          song.play();
+          $(song).bind('timeupdate', updateTime);
+
+          //var foo = document.getElementById("player");
+
+          //foo.setAttribute("src", src);
+          //foo.play();
+
+          //$('#container').append('<audio controls><source src="' + src + '" type="audio/mpeg"></audio>');
+          //var img = document.createElement("img");
+          //img.src = (window.URL || window.webkitURL).createObjectURL(new Blob(parts));
+          //document.body.appendChild(img);
+        });
+
+      });
+
+      socket.on('directories', function (result) {
+        var data = result.files;
+        var dir = result.dir;
+        var top = document.createElement("ul");
+        top.setAttribute("class", "track-list")
+        for (var i in data) {
+          if (typeof data[i].artist!="undefined" && data[i].artist) {
+            var father = document.createElement("li");
+            var element = document.createElement("input");
+            element.setAttribute("type", "button");
+            element.setAttribute("id", data[i].url);
+            element.setAttribute("class", "swipe-button");
+            element.setAttribute("value", data[i].artist);
+            element.setAttribute("onClick", "send('" + data[i].url + "');");
+
+            var t=document.createTextNode("CLICK ME");
+            element.appendChild(t);
+
+            father.appendChild(element);
+
+            top.appendChild(father);
+          }
+          if (typeof data[i].album!="undefined" && data[i].album ) {
+            var father = document.createElement("li");
+            var element = document.createElement("input");
+            element.setAttribute("type", "button");
+            element.setAttribute("id", data[i].url);
+            element.setAttribute("class", "swipe-button");
+            element.setAttribute("value", data[i].album);
+            element.setAttribute("onClick", "send('" + data[i].url + "');");
+
+            var t=document.createTextNode("CLICK ME");
+            element.appendChild(t);
+
+            father.appendChild(element);
+
+            top.appendChild(father);
+          }
+          if (typeof data[i].song!="undefined" && data[i].song ) {
+            //$('#list').append('<button type="submit" id="btn'+i+'">' + data[i].name + '</button>');
+            var father = document.createElement("li");
+            var element = document.createElement("input");
+            element.setAttribute("type", "button");
+            element.setAttribute("id", data[i].url);
+            element.setAttribute("class", "swipe-button");
+            element.setAttribute("value", data[i].song);
+            element.setAttribute("onClick", "play('" + data[i].url + "');");
+
+            var t=document.createTextNode("CLICK ME");
+            element.appendChild(t);
+
+            father.appendChild(element);
+
+            top.appendChild(father);
+          }
+          var foo = document.getElementById("fooBar");
+          foo.appendChild(top);
+        }
+        var el = document.getElementById("directory");
+        el.setAttribute("value", dir);
+      });
+
+      function send(_dir) {
+        var foo = document.getElementById("fooBar");
+
+        while (foo.hasChildNodes()) {
+          foo.removeChild(foo.lastChild);
+        }
+
+        socket.emit('send dir', {
+          dir: _dir
+        });
+      }
+
+      function go_back(_dir) {
+        var el = document.getElementById("directory");
+        var _dir = el.getAttribute('value');
+        socket.emit('get_parent', {
+          dir: _dir
+        });
+      }
+
+      socket.on('parent', function(data) {
+        send(data);
+      });
+
+      function play(_dir) {
+        curSong = _dir;
+        socket.emit('play', {
+          dir: _dir
+        });
+      };
+
+      socket.on('playit', function(src) {
+
+        if (typeof song != "undefined") {
+          song.pause();
+          song = new Audio(src);
+        }
+        else {
+          song = new Audio(src);
+        }
+        document.getElementById("pause-play-button").setAttribute("class", "pause-button");
+        song.play();
+
+        $(song).bind('timeupdate', updateTime);
+        $(song).bind('ended', play_next);
+      });
+
+      function startRead(e) {
+        var file = document.getElementById('upload').files[0];
+        var el = document.getElementById("directory");
+        var _dir = el.getAttribute("value");
+        el = document.getElementById("user");
+        var username = el.getAttribute("value");
+        if (file) {
+          var files = document.getElementById('upload').files;
+          var x = 0;
+          for (var i=0; i<files.length; i++) {
+            var stream = client.send(files[i], {name: files[i].name, size: files[i].size, dir: _dir, user:username});
+            var tx = 0;
+            stream.on('data', function(data){
+              $('#progress').text(Math.round(tx+=data.rx*100) + '% complete');
+              if (Math.round(tx)==100) {
+                x += 1;
+                tx = 0;
+                if (x==files.length) {
+                  send(_dir);
+                }
+              }
+            });
+          }
+        }
+      }
+
+      function play_pause() {
+        var cur = document.getElementById("pause-play-button").getAttribute("class");
+        if (cur=="pause-button") {
+          document.getElementById("pause-play-button").setAttribute("class", "play-button");
+          song.pause();
+        }
+        else {
+          document.getElementById("pause-play-button").setAttribute("class", "pause-button");
+          song.play();
+        }
+      }
+
+      var updateTime = function() {
+        var currentSeconds = (Math.floor(song.currentTime % 60) < 10 ? '0' : '') + Math.floor(song.currentTime % 60);
+        var currentMinutes = Math.floor(song.currentTime / 60);
+
+
+        $('#songTime').text(currentMinutes + ":" + currentSeconds + ' / ' + Math.floor(song.duration / 60) + ":" + (Math.floor(song.duration % 60) < 10 ? '0' : '') + Math.floor(song.duration % 60) );
+
+        //Fills out the slider with the appropriate position.
+        var percentageOfSong = (song.currentTime/song.duration);
+        var percentageOfSlider = document.getElementById('songSlider').offsetWidth * percentageOfSong;
+
+        var pBar = document.getElementById('songSlider');
+        pBar.setAttribute("value", percentageOfSong*100);
+        pBar.getElementsByTagName('span')[0].innerHTML = currentMinutes + ":" + currentSeconds + ' / ' + Math.floor(song.duration / 60) + ":" + (Math.floor(song.duration % 60) < 10 ? '0' : '') + Math.floor(song.duration % 60);
+      };
+
+      var play_next = function() {
+        alert(curSong);
+        var el = document.getElementById(curSong);
+        el = el.nextSibling;
+        while (el.nodeType!=1) {
+          el = el.nextSibling;
+        }
+        if (typeof el!="undefined" && el) {
+          curSong = el.getAttribute("id");
+          alert(curSong);
+          el.click();
+        }
+      }
+
+        /*
+        Gets the percentage of the click on the slider to set the song position accordingly.
+        Source for Object event and offset: http://website-engineering.blogspot.com/2011/04/get-x-y-coordinates-relative-to-div-on.html
+        */
+        //Sets the location of the song based off of the percentage of the slider clicked.
+      function setLocation(percentage){
+        song.currentTime = song.duration * percentage;
+      }
+        /*
+        Gets the percentage of the click on the slider to set the song position accordingly.
+        Source for Object event and offset: http://website-engineering.blogspot.com/2011/04/get-x-y-coordinates-relative-to-div-on.html
+        */
+      function setSongPosition(obj,e){
+        //Gets the offset from the left so it gets the exact location.
+        var songSliderWidth = obj.offsetWidth;
+        var evtobj=window.event? event : e;
+        clickLocation = evtobj.layerX - obj.offsetLeft;
+
+        var percentage = (clickLocation/songSliderWidth);
+
+        //Sets the song location with the percentage.
+        setLocation(percentage);
+      }
+
+
+  </script>
+</head>
+<body>
+
+  <div id="fade">
+  </div>
+    <div class="header">
+      <input type="button" class="button" id=<%="bnt"+i%> value="Back" onClick="go_back()">
+      </input>
+      <a 
+        onclick="document.getElementById('overlay').style.display='block';document.getElementById('fade').style.display='block'"
+        href="javascript:void(0)">Upload File
+    </a>
+    </div>
+
+    <div id="list">
+
+      <span id="fooBar">
+        <ul class="track-list">
+        <% for (var i in files) { %>
+          <% if (typeof files[i].artist!="undefined" && typeof files[i].artist) { %>
+            <li>
+              <input type="button" class="swipe-button" id=<%=files[i].url%> value="<%=files[i].artist%>" onClick="send('<%=files[i].url%>');">
+              </input>
+            </li>
+          <% } %>
+          <% if (typeof files[i].album!="undefined" && typeof files[i].album) { %>
+            <li>
+              <input type="button" class="swipe-button" id=<%=files[i].url%> value="<%=files[i].album%>" onClick="send('<%=files[i].url%>');">
+              </input>
+            </li>
+          <% } %>
+          <% if (typeof files[i].song!="undefined" && typeof files[i].song) { %>
+            <li>
+              <input type="button" class="swipe-button" id=<%=files[i].url%> value="<%=files[i].song%>" onClick="play('<%=files[i].url%>');">
+              </input>
+            </li>
+          <% } %>
+        <% } %>
+        </li>
+      </span>
+
+    </div>
+
+    <div id="directory" value="<%=dir%>" type="hidden"></div>
+    <div id="user" value="<%=user.userName%>" type="hidden"></div>
+
+    <div class="audio-container">
+      <progress id='songSlider' max='100' value='0' onclick="setSongPosition(this,event)"><span>0</span>% played</progress>
+      <div id="pause-play-button" class="play-button" onclick="play_pause()"></div>
+      <div id="forward-button" class="forward-button"></div>
+      <div id="backward-button" class="backward-button"></div>
+    </div>
+
+  <div id="overlay">
+    <a 
+    onclick="document.getElementById('overlay').style.display='none';document.getElementById('fade').style.display='none'"
+    href="javascript:void(0)">
+      <span id="close-icon">
+        
+      </span>
+    </a>
+    <input type="file" id="upload" name="files[]" multiple accept="audio/*" onchange="startRead()"/>
+  </div>
+
+</body>
+</html>
